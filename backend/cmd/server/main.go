@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/phuongaz/chatchat/internal/bootstrap"
 	"github.com/phuongaz/chatchat/internal/delivery/http"
 	"github.com/phuongaz/chatchat/internal/infra/repo"
@@ -15,10 +15,7 @@ import (
 )
 
 func main() {
-	// Check required environment variables
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
-
-	router := gin.Default()
 
 	db := bootstrap.ConnectMySQL()
 
@@ -30,7 +27,16 @@ func main() {
 	userUC := user.NewUserUsecase(userRepo)
 	chatUC := chat.NewChatUsecase(chatRepo)
 
-	router = http.NewRouter(authUC, chatUC, userUC)
+	// 👇 tạo router trước
+	router := http.NewRouter(authUC, chatUC, userUC)
+
+	// 👇 thêm CORS sau
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	log.Printf("Server starting on port 8089...")
 	router.Run(":8089")

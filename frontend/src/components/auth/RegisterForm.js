@@ -6,7 +6,6 @@ import {
   generateKeyPair, 
   generateSalt, 
   generateIV, 
-  hashPassword, 
   encryptPrivateKey,
   stringToHex
 } from '../../utils/crypto';
@@ -81,13 +80,12 @@ export default function RegisterForm({ onToggleForm }) {
       const salt = generateSalt();
       const iv = generateIV();
       
-      const hashedPassword = hashPassword(formData.password, salt);
       
       const encryptedPrivateKey = encryptPrivateKey(privateKey, formData.password, salt, iv);
 
       const registrationData = {
         username: formData.username,
-        password: hashedPassword,
+        password: formData.password,
         public_key: publicKey,
         private_encrypted_key: encryptedPrivateKey,
         iv: stringToHex(iv),

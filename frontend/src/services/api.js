@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://192.168.2.10:8089',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8089',
   timeout: 10000,
   withCredentials: true,
   headers: {
@@ -50,9 +50,9 @@ export const authAPI = {
     return api.post('/api/auth/pre-login', { username });
   },
 
-  login: (username, hashedPassword) => {
-    return api.post('/api/auth/login', { username, hashed_password: hashedPassword });
-  },
+login: (username, password) => {
+  return api.post('/api/auth/login', {  username,   password  });
+},
 
   logout: () => {
     return api.post('/api/auth/logout');

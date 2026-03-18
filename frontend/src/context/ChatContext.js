@@ -287,7 +287,7 @@ export function ChatProvider({ children }) {
   useEffect(() => {
     if (!user?.id || !privateKey) return;
 
-    const apiBase = process.env.REACT_APP_API_URL || 'http://192.168.2.10:8089';
+    const apiBase = process.env.REACT_APP_API_URL || 'http://localhost:8089';
     const wsBase = apiBase.replace(/^http/, 'ws');
     const wsUrl = `${wsBase}/api/ws/${user.id}`;
 

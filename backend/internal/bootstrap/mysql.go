@@ -11,7 +11,7 @@ import (
 
 func ConnectMySQL() *gorm.DB {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?parseTime=true",
-		"root", "123456", "localhost:3306", "chatchat")
+		"root", "Maiphuong03@", "localhost:3306", "chatchat")
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
