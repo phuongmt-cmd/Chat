@@ -1,78 +1,76 @@
-import React from 'react';
-import { useAuth } from '../../context/AuthContext';
+import React, { useEffect, useRef } from "react";
+import { useChat } from "../../context/ChatContext";
+import Message from "./Message";
 
-const formatMessageTime = (timestamp) => {
-  if (!timestamp) {
-    console.log('⏰ No timestamp provided, returning "Now"');
-    return 'Now';
-  }
-  
-  const messageDate = new Date(timestamp);
-  const now = new Date();
-  
-  // Debug logging
-  console.log('⏰ Formatting timestamp:', timestamp);
-  console.log('⏰ Message date:', messageDate.toISOString());
-  console.log('⏰ Current time:', now.toISOString());
-  
-  // Check if date is valid
-  if (isNaN(messageDate.getTime())) {
-    console.log('⏰ Invalid date, returning "Now"');
-    return 'Now';
-  }
-  
-  const diffInMs = now - messageDate;
-  const diffInSeconds = Math.floor(diffInMs / 1000);
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
-  
-  console.log('⏰ Time difference:', {
-    seconds: diffInSeconds,
-    minutes: diffInMinutes,
-    hours: diffInHours,
-    days: diffInDays
-  });
-  
-  if (diffInSeconds < 10) {
-    return 'Just now';
-  } else if (diffInSeconds < 60) {
-    return `${diffInSeconds}s ago`;
-  } else if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`;
-  } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`;
-  } else if (diffInDays < 7) {
-    return `${diffInDays}d ago`;
-  } else {
-    return messageDate.toLocaleDateString();
-  }
-};
+export default function MessageList() {
+  const { messages, currentChat, isLoading } = useChat();
+  const messagesEndRef = useRef(null);
 
-export default function Message({ message, currentChat }) {
-  const { user } = useAuth();
-  
-  if (!message) return null;
-  
-  const isFromCurrentUser = message.sender_id === user?.id;
-  const isDecrypted = message.isDecrypted !== false;
-  
-  return (
-    <div className={`flex ${isFromCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}>
-      <div
-        className={`max-w-xs lg:max-w-md px-4 py-2.5 rounded-card shadow-sm ${
-          isFromCurrentUser
-            ? 'bg-brand-green text-white rounded-br-none'
-            : 'bg-background-white text-text-primary rounded-bl-none border border-ui-border'
-        }`}
-      >
-        <p className="text-sm font-baloo">
-          {isDecrypted ? (message.text || '[Tin nhắn trống]') : '[Tin nhắn được mã hóa]'}
-        </p>
-        <p className={`text-xs mt-1 ${isFromCurrentUser ? 'text-white/75' : 'text-text-light'}`}>
-          {formatMessageTime(message.created_at)}
-        </p>
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  if (!currentChat) {
+    return (
+      <div className="flex h-full items-center justify-center px-6">
+        <div className="max-w-xl text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-[28px] bg-blue-50 text-4xl text-blue-600">
+            💬
+          </div>
+          <h3 className="text-4xl font-bold tracking-tight text-slate-900">
+            Chọn một cuộc trò chuyện
+          </h3>
+          <p className="mt-4 text-lg leading-8 text-slate-500">
+            Chọn người dùng từ danh sách bên trái để bắt đầu nhắn tin trong giao
+            diện mới.
+          </p>
+        </div>
       </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center px-6">
+        <div className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-sm font-medium text-slate-500 shadow-sm">
+          Đang tải tin nhắn...
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-y-auto bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.08),_transparent_30%)] px-4 py-5 md:px-6">
+      {messages.length === 0 ? (
+        <div className="flex h-full items-center justify-center">
+          <div className="max-w-md rounded-[28px] border border-slate-200 bg-white px-8 py-10 text-center shadow-sm">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-3xl">
+              ✨
+            </div>
+            <div className="text-2xl font-bold text-slate-900">
+              Chưa có tin nhắn
+            </div>
+            <div className="mt-3 text-sm leading-7 text-slate-500">
+              Hãy gửi tin nhắn đầu tiên để bắt đầu cuộc trò chuyện với{" "}
+              <span className="font-semibold text-slate-700">
+                {currentChat?.username}
+              </span>
+              .
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="mx-auto flex max-w-4xl flex-col gap-3">
+          {messages.map((message, index) => (
+            <Message
+              key={message.id || message.message_id || `${message.sender_id}-${index}`}
+              message={message}
+              currentChat={currentChat}
+            />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      )}
     </div>
   );
 }
