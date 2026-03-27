@@ -8,6 +8,7 @@ import { ChatProvider } from './context/ChatContext';
 
 import AuthPage from './pages/AuthPage';
 import ChatPage from './pages/ChatPage';
+import SecurityPage from './pages/SecurityPage';
 
 function LoadingScreen() {
   return (
@@ -67,6 +68,15 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ChatPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/security"
+        element={
+          <ProtectedRoute>
+            <SecurityPage />
           </ProtectedRoute>
         }
       />

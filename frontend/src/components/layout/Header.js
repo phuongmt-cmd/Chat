@@ -60,7 +60,12 @@ export default function Header({ currentChat }) {
               <div className="text-xs text-emerald-600">Online</div>
             </div>
           </div>
-
+          <button
+            onClick={() => (window.location.href = "/security")}
+             className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Security
+          </button>
           <button
             onClick={handleLogout}
             className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"

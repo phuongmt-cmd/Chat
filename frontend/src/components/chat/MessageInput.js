@@ -1,11 +1,24 @@
 import React, { useRef, useState } from "react";
 import { useChat } from "../../context/ChatContext";
+import { securityAPI } from "../../services/api";
 
 export default function MessageInput() {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const { currentChat, sendMessage } = useChat();
   const inputRef = useRef(null);
+
+  const suspiciousPatterns = [
+    "<script>",
+    "javascript:",
+    "onerror=",
+    "<img",
+  ];
+
+  const containsSuspiciousContent = (text) => {
+    const lower = text.toLowerCase();
+    return suspiciousPatterns.some((pattern) => lower.includes(pattern));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,6 +27,17 @@ export default function MessageInput() {
 
     try {
       setIsSending(true);
+
+      if (containsSuspiciousContent(message.trim())) {
+        await securityAPI.reportIncident({
+          type: "SUSPICIOUS_CONTENT",
+          description: "Phát hiện nội dung nghi ngờ XSS trong tin nhắn",
+        });
+
+        alert("Tin nhắn chứa nội dung nghi ngờ và đã được ghi nhận là một sự cố bảo mật.");
+        setIsSending(false);
+        return;
+      }
 
       const result = await sendMessage(currentChat.user_id, message.trim());
 
@@ -68,10 +92,7 @@ export default function MessageInput() {
                 disabled={isSending}
                 onInput={(e) => {
                   e.target.style.height = "56px";
-                  e.target.style.height = `${Math.min(
-                    e.target.scrollHeight,
-                    128
-                  )}px`;
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 128)}px`;
                 }}
               />
 

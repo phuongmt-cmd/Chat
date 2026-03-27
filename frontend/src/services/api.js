@@ -33,11 +33,6 @@ const api = axios.create({
 // );
 
 export const authAPI = {
-  /**
-   * Check if user already exists
-   * @param {string} username 
-   * @returns {Promise}
-   */
   checkRegister: (username) => {
     return api.post('/api/auth/check-register', { username });
   },
@@ -50,46 +45,33 @@ export const authAPI = {
     return api.post('/api/auth/pre-login', { username });
   },
 
-login: (username, password) => {
-  return api.post('/api/auth/login', {  username,   password  });
-},
+  login: (username, password) => {
+    return api.post('/api/auth/login', {
+      username,
+      password,
+    });
+  },
 
   logout: () => {
     return api.post('/api/auth/logout');
-  }
+  },
 };
 
 export const userAPI = {
-
   getPublicKey: (userID) => {
     return api.get(`/api/user/public-key/${userID}`);
   },
 
-  /**
-   * Get user profile
-   * @returns {Promise}
-   */
   getProfile: () => {
     return api.get('/api/user/profile');
   },
 
-  /**
-   * Search users
-   * @param {string} query 
-   * @returns {Promise}
-   */
   searchUser: (query) => {
     return api.get(`/api/user/search?q=${encodeURIComponent(query)}`);
-  }
+  },
 };
 
-// Chat API endpoints
 export const chatAPI = {
-  /**
-   * Send encrypted message
-   * @param {Object} messageData - Message data with encryption
-   * @returns {Promise}
-   */
   sendMessage: (messageData) => {
     return api.post('/api/chat/send-message', messageData);
   },
@@ -102,17 +84,23 @@ export const chatAPI = {
     return api.get(`/api/chat/history/${userID}`);
   },
 
-  /**
-   * Get chat list
-   * @returns {Promise}
-   */
   getChatList: () => {
     return api.get('/api/chat/history');
   },
 
   deleteConversation: (conversationID) => {
     return api.delete(`/api/chat/conversation/${conversationID}`);
-  }
+  },
 };
 
-export default api; 
+export const securityAPI = {
+  getIncidents: () => {
+    return api.get('/api/security/incidents');
+  },
+
+  reportIncident: (payload) => {
+    return api.post('/api/security/report', payload);
+  },
+};
+
+export default api;
