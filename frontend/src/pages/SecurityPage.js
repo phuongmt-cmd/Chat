@@ -59,6 +59,16 @@ export default function SecurityPage() {
     }
   };
 
+  const handleResolve = async (id) => {
+    try {
+      await securityAPI.resolveIncident(id);
+      await loadIncidents();
+    } catch (err) {
+      console.error("Resolve incident error:", err);
+      alert("Không thể cập nhật trạng thái incident");
+    }
+  };
+
   useEffect(() => {
     loadIncidents();
   }, []);
@@ -148,6 +158,7 @@ export default function SecurityPage() {
                     <th className="px-6 py-4 font-semibold">Mô tả</th>
                     <th className="px-6 py-4 font-semibold">Trạng thái</th>
                     <th className="px-6 py-4 font-semibold">Thời gian</th>
+                    <th className="px-6 py-4 font-semibold">Hành động</th>
                   </tr>
                 </thead>
 
@@ -173,6 +184,18 @@ export default function SecurityPage() {
                         {incident.created_at
                           ? new Date(incident.created_at).toLocaleString()
                           : ""}
+                      </td>
+                      <td className="px-6 py-4">
+                        {incident.status === "OPEN" ? (
+                          <button
+                            onClick={() => handleResolve(incident.id)}
+                            className="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                          >
+                            Resolve
+                          </button>
+                        ) : (
+                          <span className="text-slate-400">Đã xử lý</span>
+                        )}
                       </td>
                     </tr>
                   ))}

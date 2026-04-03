@@ -52,6 +52,7 @@ func NewRouter(authUC auth.AuthUsecase, chatUC chat.ChatUsecase, userUC user.Use
 
 		securityGroup.GET("/incidents", securityHandler.GetIncidents)
 		securityGroup.POST("/report", reportHandler.ReportSuspiciousContent)
+		securityGroup.PUT("/incident/:id/resolve", securityHandler.ResolveIncident)
 	}
 
 	ws := websocket.NewWebSocketHandler(chatUC, userUC)

@@ -3,9 +3,11 @@ package security
 import "time"
 
 type Incident struct {
-	ID        uint      `gorm:"primaryKey" json:"id"`
-	UserID    string    `json:"user_id"`
-	Type      string    `json:"type"`
-	Message   string    `json:"message"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          string    `gorm:"primaryKey" json:"id"`
+	Type        string    `json:"type"`
+	Severity    string    `json:"severity"`
+	UserID      string    `json:"user_id"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
 }

@@ -9,29 +9,6 @@ const api = axios.create({
   },
 });
 
-// api.interceptors.request.use(
-//   (config) => {
-//     const token = localStorage.getItem('token');
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
-
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response?.status === 401) {
-//       window.location.href = '/login';
-//     }
-//     return Promise.reject(error);
-//   }
-// );
-
 export const authAPI = {
   checkRegister: (username) => {
     return api.post('/api/auth/check-register', { username });
@@ -80,7 +57,7 @@ export const chatAPI = {
     return api.get(`/api/chat/messages/${conversationID}?page=${page}&limit=${limit}`);
   },
 
-  getMessagesByUser: (userID, page = 1, limit = 50) => {
+  getMessagesByUser: (userID) => {
     return api.get(`/api/chat/history/${userID}`);
   },
 
@@ -100,6 +77,10 @@ export const securityAPI = {
 
   reportIncident: (payload) => {
     return api.post('/api/security/report', payload);
+  },
+
+  resolveIncident: (id) => {
+    return api.put(`/api/security/incident/${id}/resolve`);
   },
 };
 
