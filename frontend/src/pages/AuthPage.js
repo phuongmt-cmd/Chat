@@ -1,67 +1,110 @@
 import React, { useState } from 'react';
+import {
+  ShieldCheckIcon,
+  LockClosedIcon,
+  BoltIcon,
+  ChatBubbleLeftRightIcon,
+} from '@heroicons/react/24/outline';
+
 import LoginForm from '../components/auth/LoginForm';
 import RegisterForm from '../components/auth/RegisterForm';
 import logo from '../assets/images/logo.png';
 
+const features = [
+  {
+    icon: ShieldCheckIcon,
+    title: 'Mã hóa đầu cuối',
+    desc: 'Tin nhắn được mã hóa phía client trước khi gửi đi.',
+  },
+  {
+    icon: BoltIcon,
+    title: 'Nhắn tin thời gian thực',
+    desc: 'Nhận và gửi tin nhắn nhanh với WebSocket.',
+  },
+  {
+    icon: LockClosedIcon,
+    title: 'Đăng nhập an toàn',
+    desc: 'Xác thực người dùng và lưu phiên làm việc.',
+  },
+  {
+    icon: ChatBubbleLeftRightIcon,
+    title: 'Trải nghiệm hiện đại',
+    desc: 'Giao diện gọn gàng, tập trung vào cuộc trò chuyện.',
+  },
+];
+
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
 
-  const toggleForm = () => {
-    setIsLogin(!isLogin);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-full mb-4">
-            <img src={logo} alt="ChatChit" className="w-16 h-16" />
+    <div className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-7xl overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative hidden overflow-hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.22),_transparent_30%)]" />
+          <div className="relative z-10">
+            <div className="mb-10 flex items-center gap-3">
+              <img src={logo} alt="ChatChit" className="h-12 w-12 rounded-2xl bg-white/10 p-2" />
+              <div>
+                <p className="text-xl font-bold tracking-tight">ChatChit</p>
+                <p className="text-sm text-slate-300">Secure messaging workspace</p>
+              </div>
+            </div>
+
+            <div className="max-w-xl">
+              <div className="mb-4 inline-flex items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium text-blue-100">
+                E2EE • Real-time • Private
+              </div>
+
+              <h1 className="text-4xl font-bold leading-tight">
+                Trò chuyện hiện đại, gọn gàng và an toàn hơn.
+              </h1>
+
+              <p className="mt-5 max-w-lg text-base leading-7 text-slate-300">
+                Đăng nhập vào không gian trò chuyện của bạn với giao diện mới rõ ràng hơn,
+                dễ dùng hơn và sẵn sàng để mở rộng cho chuyên đề 2 sau đó.
+              </p>
+            </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2 font-bangers-regular">ChatChit</h1>
-          <p className="text-gray-600 font-baloo">Trò chuyện an toàn</p>
+
+          <div className="relative z-10 grid gap-4 md:grid-cols-2">
+            {features.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.title}
+                  className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+                >
+                  <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="text-base font-semibold">{item.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{item.desc}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Auth forms */}
-        {isLogin ? (
-          <LoginForm onToggleForm={toggleForm} />
-        ) : (
-          <RegisterForm onToggleForm={toggleForm} />
-        )}
+        <div className="flex items-center justify-center bg-white p-6 sm:p-10">
+          <div className="w-full max-w-md">
+            <div className="mb-8 text-center lg:hidden">
+              <div className="mb-4 flex items-center justify-center gap-3">
+                <img src={logo} alt="ChatChit" className="h-12 w-12 rounded-2xl bg-slate-100 p-2" />
+                <div className="text-left">
+                  <p className="text-xl font-bold tracking-tight text-slate-900">ChatChit</p>
+                  <p className="text-sm text-slate-500">Secure messaging workspace</p>
+                </div>
+              </div>
+            </div>
 
-        {/* Features */}
-        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-          <div className="p-3">
-            <div className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 rounded-lg mb-2">
-              <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900 mb-1">Bảo mật</h3>
-            <p className="text-xs text-gray-500">Mã hóa đầu cuối</p>
-          </div>
-          
-          <div className="p-3">
-            <div className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 rounded-lg mb-2">
-              <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900 mb-1">Nhanh</h3>
-            <p className="text-xs text-gray-500">Trò chuyện thời gian thực</p>
-          </div>
-          
-          <div className="p-3">
-            <div className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 rounded-lg mb-2">
-              <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900 mb-1">Riêng tư</h3>
-            <p className="text-xs text-gray-500">Dữ liệu của bạn, kiểm soát của bạn</p>
+            {isLogin ? (
+              <LoginForm onToggleForm={() => setIsLogin(false)} />
+            ) : (
+              <RegisterForm onToggleForm={() => setIsLogin(true)} />
+            )}
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

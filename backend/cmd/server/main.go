@@ -6,7 +6,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/phuongaz/chatchat/internal/bootstrap"
-	"github.com/phuongaz/chatchat/internal/delivery/http"
+	httpdelivery "github.com/phuongaz/chatchat/internal/delivery/http"
+	security "github.com/phuongaz/chatchat/internal/security"
 	"github.com/phuongaz/chatchat/internal/infra/repo"
 	"github.com/phuongaz/chatchat/internal/usecase/auth"
 	"github.com/phuongaz/chatchat/internal/usecase/chat"
@@ -19,6 +20,8 @@ func main() {
 
 	db := bootstrap.ConnectMySQL()
 
+	security.SetIncidentRepo(db)
+
 	userRepo := repo.NewMysqlUserRepo(db)
 	chatRepo := repo.NewMysqlChatRepo(db)
 
@@ -27,10 +30,8 @@ func main() {
 	userUC := user.NewUserUsecase(userRepo)
 	chatUC := chat.NewChatUsecase(chatRepo)
 
-	// 👇 tạo router trước
-	router := http.NewRouter(authUC, chatUC, userUC)
+	router := httpdelivery.NewRouter(authUC, chatUC, userUC)
 
-	// 👇 thêm CORS sau
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},

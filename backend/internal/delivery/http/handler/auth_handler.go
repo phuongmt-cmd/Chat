@@ -2,13 +2,17 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	domainAuth "github.com/phuongaz/chatchat/internal/domain/auth"
 	"github.com/phuongaz/chatchat/internal/dto"
+	security "github.com/phuongaz/chatchat/internal/security"
 	"github.com/phuongaz/chatchat/internal/usecase/auth"
 	"github.com/phuongaz/chatchat/internal/usecase/user"
 )
+
+var loginAttemptDetector = security.NewLoginAttemptDetector(5, 5*time.Minute, incidentStore)
 
 type AuthHandler struct {
 	authUC auth.AuthUsecase
@@ -20,7 +24,6 @@ func NewAuthHandler(authUC auth.AuthUsecase, userUC user.UserUsecase) *AuthHandl
 }
 
 func (h *AuthHandler) CheckRegister(c *gin.Context) {
-	//same login request but check if user already exists
 	var req domainAuth.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, dto.Response{
@@ -111,12 +114,22 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	token, user, err := h.authUC.Login(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, dto.Response{
-			Code:    http.StatusInternalServerError,
-			Message: err.Error(),
+		if blockErr := loginAttemptDetector.RegisterFailure(req.Username); blockErr != nil {
+			c.JSON(http.StatusTooManyRequests, dto.Response{
+				Code:    http.StatusTooManyRequests,
+				Message: blockErr.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusUnauthorized, dto.Response{
+			Code:    http.StatusUnauthorized,
+			Message: "Tên đăng nhập hoặc mật khẩu không đúng",
 		})
 		return
 	}
+
+	loginAttemptDetector.Reset(req.Username)
 
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "token",

@@ -8,8 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 	chatDomain "github.com/phuongaz/chatchat/internal/domain/chat"
 	"github.com/phuongaz/chatchat/internal/dto"
+	security "github.com/phuongaz/chatchat/internal/security"
 	chatUsecase "github.com/phuongaz/chatchat/internal/usecase/chat"
 )
+
+var incidentStore = security.NewIncidentStore()
+var floodDetector = security.NewFloodDetector(5, 10*time.Second, incidentStore)
 
 type ChatHandler struct {
 	chatUC chatUsecase.ChatUsecase
@@ -58,7 +62,7 @@ func (h *ChatHandler) HistoryChats(c *gin.Context) {
 
 func (h *ChatHandler) HistoryChatsByUserID(c *gin.Context) {
 	userID := c.Param("userID")
-	//log.Printf("HistoryChatsByUserID called for target user: %s", userID)
+
 	currentUserIDValue, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, dto.Response{
@@ -77,8 +81,6 @@ func (h *ChatHandler) HistoryChatsByUserID(c *gin.Context) {
 		return
 	}
 
-	//log.Printf("Looking for conversation between current user %s and target user %s", currentUserID, userID)
-
 	conversationID, err := h.chatUC.GetOrCreateConversationID(c.Request.Context(), currentUserID, userID)
 	if err != nil {
 		log.Printf("Failed to get conversation ID: %v", err)
@@ -89,8 +91,6 @@ func (h *ChatHandler) HistoryChatsByUserID(c *gin.Context) {
 		return
 	}
 
-	//log.Printf("Found/created conversation ID: %s", conversationID)
-
 	messages, err := h.chatUC.GetMessagesByConversationID(c.Request.Context(), conversationID)
 	if err != nil {
 		log.Printf("Failed to get messages for conversation %s: %v", conversationID, err)
@@ -100,8 +100,6 @@ func (h *ChatHandler) HistoryChatsByUserID(c *gin.Context) {
 		})
 		return
 	}
-
-	//log.Printf("Found %d messages for conversation %s", len(messages), conversationID)
 
 	c.JSON(http.StatusOK, dto.Response{
 		Code:    http.StatusOK,
@@ -122,6 +120,7 @@ func (h *ChatHandler) GetMessagesByConversationID(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(http.StatusOK, dto.Response{
 		Code:    http.StatusOK,
 		Message: "Messages",
@@ -165,9 +164,22 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	//log.Printf("SendMessage: Sending message from %s to %s", senderID, req.ReceiverID)
+	// Phát hiện spam/flood
+	if err := floodDetector.Check(senderID); err != nil {
+		log.Printf("SendMessage: Flood detected for user %s: %v", senderID, err)
+		c.JSON(http.StatusTooManyRequests, dto.Response{
+			Code:    http.StatusTooManyRequests,
+			Message: err.Error(),
+		})
+		return
+	}
 
-	// Create encrypted message
+	// Lưu ý:
+	// Ở đây backend chỉ nhận ciphertext + iv, không có plaintext message.
+	// Vì vậy không thể kiểm tra trực tiếp XSS/suspicious content trong handler này.
+	// Việc phát hiện nội dung nghi ngờ nên làm ở frontend trước khi mã hóa
+	// hoặc ở một endpoint riêng nếu frontend gửi signal cảnh báo.
+
 	encryptedMsg := chatDomain.EncryptedMessage{
 		SenderID:   senderID,
 		ReceiverID: req.ReceiverID,
@@ -186,12 +198,12 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	log.Printf("SendMessage: Successfully sent message")
+	log.Printf("SendMessage: Successfully sent message from %s to %s", senderID, req.ReceiverID)
 	c.JSON(http.StatusOK, dto.Response{
 		Code:    http.StatusOK,
 		Message: "Message sent successfully",
 		Data: gin.H{
-			"message_id": time.Now().Unix(), // Simple message ID for now
+			"message_id": time.Now().Unix(),
 			"timestamp":  encryptedMsg.Timestamp,
 		},
 	})
@@ -218,11 +230,8 @@ func (h *ChatHandler) DeleteConversation(c *gin.Context) {
 		return
 	}
 
-	//log.Printf("DeleteConversation: User %s requesting to delete conversation %s", userID, conversationID)
-
 	err := h.chatUC.DeleteConversation(c.Request.Context(), conversationID, userID)
 	if err != nil {
-		//log.Printf("DeleteConversation: Failed to delete conversation: %v", err)
 		c.JSON(http.StatusInternalServerError, dto.Response{
 			Code:    http.StatusInternalServerError,
 			Message: err.Error(),
